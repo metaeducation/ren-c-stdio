@@ -1,2 +1,3 @@
-# ren-c-stdio
-Stdio Extension for Ren-C
+# Stdio Extension for Ren-C
+
+This repository contains the tests for the stdio extension.
