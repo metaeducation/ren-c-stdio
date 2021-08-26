@@ -93,31 +93,66 @@ jobs:
         r3 tests/filecompare.r ../hello.txt hello.out
 
     - name: Redirect to /dev/null (make sure it terminates, doesn't crash)
-      if: matrix.os != 'windows-latest'  # windows does not have /dev/null
+      if: matrix.os != 'windows-latest'  # Windows does not have /dev/null
       run: |
         r3 --do "print {Hello} print {World}" > /dev/null
 
-    - name: Redirect to NUL instead of /dev/null on Windows
+    - name: CMD.EXE redirect input NUL instead of /dev/null on Windows
       if: matrix.os == 'windows-latest'
+      shell: cmd  # Note: PowerShell is default
       run: |
         r3 --do "print {Hello} print {World}" > NUL
+
+    - name: PowerShell redirect output $NULL instead of /dev/null on Windows
+      if: matrix.os == 'windows-latest'
+      run: |
+        r3 --do "print {Hello} print {World}" > $NULL
 
 
   #====# INPUT REDIRECTION (READ-LINE -> TEXT!) #=============================#
 
-    - name: Simple Input Redirect to "tac" implementation ("reverse-UNIX-cat")
+    - name: (UNIX) Simple Input Redirect to "tac" implementation
+      if: matrix.os != 'windows-latest'
       run: |
-        r3 tests/tac.r < tests/hello.in > hello-tac.txt
+        r3 tests/tac.r < tests/hello.in > hello-tac-unix.txt
+        r3 tests/filecompare.r ../hello-tac-unix.txt hello-tac.out
+
+    - name: (PowerShell) Simple Input Redirect to "tac" on Windows
+      if: matrix.os == 'windows-latest'
+      run: |
+        Get-Content tests/hello.in | r3 tests/tac.r > hello-tac.txt
         r3 tests/filecompare.r ../hello-tac.txt hello-tac.out
 
-    - name: Try redirecting /dev/null as input
-      if: matrix.os != 'windows-latest'  # windows does not have /dev/null
+    - name: (CMD.EXE) Simple Input Redirect to "tac" on Windows
+      if: matrix.os == 'windows-latest'
+      shell: cmd  # Note: PowerShell is default
+      run: |
+        r3 tests/tac.r < tests/hello.in > hello-tac-cmd.txt
+        r3 tests/filecompare.r ../hello-tac-cmd.txt hello-tac.out
+
+    - name: (UNIX) Try redirecting /dev/null as input
+      if: matrix.os != 'windows-latest'  # Windows does not have /dev/null
       run: |
         r3 tests/tac.r < /dev/null > tac-dev-null-in-unix.txt
         r3 tests/filecompare.r ../tac-dev-null-in-unix.txt tac-dev-null-in.out
 
-    - name: Try redirecting from NUL instead of /dev/null on Windows
-      if: matrix.os == 'windows-latest'
+    # !!! PowerShell does not have a `<` operator to feed input leftwards, you
+    # put the input on the left and pipe it rightwards with `|`.  Doing that
+    # and substituting $NULL gives a different behavior from `< NUL` in CMD.EXE
+    # which is an error raised: "The pipe has been ended."
+    #
+    # Test disabled until more information is gathered about what response this
+    # should have.
+    #
+    - name: (PowerShell) Try redirecting $NULL as input
+      if: false
       run: |
-        r3 tests/tac.r < NUL > tac-dev-null-in-win.txt
+        $NULL | r3 tests/tac.r > tac-dev-null-in-win.txt
         r3 tests/filecompare.r ../tac-dev-null-in-win.txt tac-dev-null-in.out
+
+    - name: (CMD.EXE) Try redirecting NUL as input
+      if: matrix.os == 'windows-latest'
+      shell: cmd  # Note: PowerShell is default
+      run: |
+        r3 tests/tac.r < NUL > tac-dev-null-in-cmd.txt
+        r3 tests/filecompare.r ../tac-dev-null-in-cmd.txt tac-dev-null-in.out
