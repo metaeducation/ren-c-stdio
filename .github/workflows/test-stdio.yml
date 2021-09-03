@@ -90,7 +90,7 @@ jobs:
     - name: (UNIX and Windows) Simple PRINT Output Redirect
       run: |
         r3 --do "print {Hello} print {World}" > hello.txt
-        r3 tests/filecompare.r ../hello.txt hello.out
+        r3 tests/filecompare.r hello.txt tests/hello.out
 
     - name: (UNIX) Redirect PRINT to /dev/null
       if: matrix.os != 'windows-latest'  # Windows does not have /dev/null
@@ -115,26 +115,26 @@ jobs:
       if: matrix.os != 'windows-latest'
       run: |
         r3 tests/tac.r < tests/hello.in > hello-tac-unix.txt
-        r3 tests/filecompare.r ../hello-tac-unix.txt hello-tac.out
+        r3 tests/filecompare.r hello-tac-unix.txt tests/hello-tac.out
 
     - name: (PowerShell) Simple Input Redirect to "tac" on Windows
       if: matrix.os == 'windows-latest'
       run: |
         Get-Content tests/hello.in | r3 tests/tac.r > hello-tac.txt
-        r3 tests/filecompare.r ../hello-tac.txt hello-tac.out
+        r3 tests/filecompare.r hello-tac.txt tests/hello-tac.out
 
     - name: (CMD.EXE) Simple Input Redirect to "tac" on Windows
       if: matrix.os == 'windows-latest'
       shell: cmd  # Note: PowerShell is default
       run: |
         r3 tests/tac.r < tests/hello.in > hello-tac-cmd.txt
-        r3 tests/filecompare.r ../hello-tac-cmd.txt hello-tac.out
+        r3 tests/filecompare.r hello-tac-cmd.txt tests/hello-tac.out
 
     - name: (UNIX) Try redirecting /dev/null as input
       if: matrix.os != 'windows-latest'  # Windows does not have /dev/null
       run: |
         r3 tests/tac.r < /dev/null > tac-dev-null-in-unix.txt
-        r3 tests/filecompare.r ../tac-dev-null-in-unix.txt empty-file.out
+        r3 tests/filecompare.r tac-dev-null-in-unix.txt tests/empty-file.out
 
     # !!! PowerShell does not have a `<` operator to feed input leftwards, you
     # put the input on the left and pipe it rightwards with `|`.  Doing that
@@ -148,14 +148,14 @@ jobs:
       if: false  # !!! commented out
       run: |
         $NULL | r3 tests/tac.r > tac-dev-null-in-win.txt
-        r3 tests/filecompare.r ../tac-dev-null-in-win.txt empty-file.out
+        r3 tests/filecompare.r tac-dev-null-in-win.txt tests/empty-file.out
 
     - name: (CMD.EXE) Try redirecting NUL as input
       if: matrix.os == 'windows-latest'
       shell: cmd  # Note: PowerShell is default
       run: |
         r3 tests/tac.r < NUL > tac-dev-null-in-cmd.txt
-        r3 tests/filecompare.r ../tac-dev-null-in-cmd.txt empty-file.out
+        r3 tests/filecompare.r tac-dev-null-in-cmd.txt tests/empty-file.out
 
 
   #====# INPUT REDIRECTION (READ-CHAR -> ISSUE!) #============================#
@@ -164,26 +164,26 @@ jobs:
       if: matrix.os != 'windows-latest'
       run: |
         r3 tests/revchars.r < tests/hello.in > hello-revchars-unix.txt
-        r3 tests/filecompare.r ../hello-revchars-unix.txt hello-revchars.out
+        r3 tests/filecompare.r hello-revchars-unix.txt tests/hello-revchars.out
 
     - name: (PowerShell) Character-Based Reversal
       if: matrix.os == 'windows-latest'
       run: |
         Get-Content tests/hello.in | r3 tests/revchars.r > hello-revchars.txt
-        r3 tests/filecompare.r ../hello-revchars.txt hello-revchars.out
+        r3 tests/filecompare.r hello-revchars.txt tests/hello-revchars.out
 
     - name: (CMD.EXE) Character-Based Reversal
       if: matrix.os == 'windows-latest'
       shell: cmd  # Note: PowerShell is default
       run: |
         r3 tests/revchars.r < tests/hello.in > hello-revchars-cmd.txt
-        r3 tests/filecompare.r ../hello-revchars-cmd.txt hello-revchars.out
+        r3 tests/filecompare.r hello-revchars-cmd.txt tests/hello-revchars.out
 
     - name: (UNIX) Try redirecting /dev/null as input
       if: matrix.os != 'windows-latest'  # Windows does not have /dev/null
       run: |
         r3 tests/revchars.r < /dev/null > revchars-dev-null-in-unix.txt
-        r3 tests/filecompare.r ../revchars-dev-null-in-unix.txt empty-file.out
+        r3 tests/filecompare.r revchars-dev-null-in-unix.txt tests/empty-file.out
 
     # !!! See notes above on Powershell and $NULL input
     #
@@ -191,11 +191,11 @@ jobs:
       if: false  # !!! commented out
       run: |
         $NULL | r3 tests/revchars.r > revchars-dev-null-in-win.txt
-        r3 tests/filecompare.r ../revchars-dev-null-in-win.txt empty-file.out
+        r3 tests/filecompare.r revchars-dev-null-in-win.txt tests/empty-file.out
 
     - name: (CMD.EXE) Try redirecting NUL as input
       if: matrix.os == 'windows-latest'
       shell: cmd  # Note: PowerShell is default
       run: |
         r3 tests/revchars.r < NUL > revchars-dev-null-in-cmd.txt
-        r3 tests/filecompare.r ../revchars-dev-null-in-cmd.txt empty-file.out
+        r3 tests/filecompare.r revchars-dev-null-in-cmd.txt tests/empty-file.out
