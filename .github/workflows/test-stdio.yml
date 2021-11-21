@@ -1,3 +1,17 @@
+# NOTICE: This test uses windows CMD.EXE and (almost no) PowerShell.
+#
+# With PowerShell "Core", a cross-platform focus got them away from UTF-16
+# redirection plus a Byte-Order-Mark to actually using UTF-8 with no BOM.
+# Yet even as the Linux version supports plain LF in files, the Windows version
+# uses CR LF in redirects.
+#
+# The tides of logic pushed them to forced acceptance of UTF-8 with no BOM.
+# While it may be slower, those tides will hopefully lead to providing an
+# *option* to not inject CR LF into redirects (which corrupts binary data)...
+# then that option will also become the default.
+#
+# Until then...
+
 name: Test Stdio and Redirection
 
 on:
@@ -85,31 +99,50 @@ jobs:
         checked: ${{ matrix.checked }}
 
 
-  #====# OUTPUT REDIRECTION #=================================================#
+  #====# NORMAL OUTPUT REDIRECTION #==========================================#
 
-    - name: (UNIX and Windows) Simple PRINT Output Redirect
+    - name: (UNIX) Simple PRINT Output Redirect
+      if: matrix.os != 'windows-latest'
       run: |
         r3 --do "print {Hello} print {World}" > hello.txt
         r3 tests/filecompare.r hello.txt tests/hello.out
 
+    - name: (CMD.EXE) Simple PRINT Output Redirect
+      if: matrix.os == 'windows-latest'
+      shell: cmd
+      run: |
+        r3 --do "print {Hello} print {World}" > hello.txt
+        r3 tests/filecompare.r hello.txt tests/hello.out
+
+    - name: (Powershell) Simple PRINT Output Redirect
+      if: false  # !!! PowerShell corrupts output (LF -> CR LF) on Windows
+      shell: cmd
+      run: |
+        r3 --do "print {Hello} print {World}" > hello.txt
+        r3 tests/filecompare.r hello.txt tests/hello.out
+
+
+  #====# NULL OUTPUT REDIRECTION #============================================#
+
     - name: (UNIX) Redirect PRINT to /dev/null
-      if: matrix.os != 'windows-latest'  # Windows does not have /dev/null
+      if: matrix.os != 'windows-latest'
       run: |
         r3 --do "print {Hello} print {World}" > /dev/null
 
     - name: (CMD.EXE) Redirect PRINT to NUL
       if: matrix.os == 'windows-latest'
-      shell: cmd  # Note: PowerShell is default
+      shell: cmd
       run: |
         r3 --do "print {Hello} print {World}" > NUL
 
     - name: (PowerShell) Redirect PRINT to $NULL
       if: matrix.os == 'windows-latest'
+      shell: pwsh
       run: |
         r3 --do "print {Hello} print {World}" > $NULL
 
 
-  #====# INPUT REDIRECTION (READ-LINE -> TEXT!) #=============================#
+  #====# NORMAL READ-LINE REDIRECTION (READ-LINE -> TEXT!) #==================#
 
     - name: (UNIX) Simple Input Redirect to "tac" implementation
       if: matrix.os != 'windows-latest'
@@ -118,7 +151,8 @@ jobs:
         r3 tests/filecompare.r hello-tac-unix.txt tests/hello-tac.out
 
     - name: (PowerShell) Simple Input Redirect to "tac" on Windows
-      if: matrix.os == 'windows-latest'
+      if: false  # !!! PowerShell corrupts output (LF -> CR LF) on Windows
+      shell: pwsh
       run: |
         Get-Content tests/hello.in | r3 tests/tac.r > hello-tac.txt
         r3 tests/filecompare.r hello-tac.txt tests/hello-tac.out
@@ -129,6 +163,9 @@ jobs:
       run: |
         r3 tests/tac.r < tests/hello.in > hello-tac-cmd.txt
         r3 tests/filecompare.r hello-tac-cmd.txt tests/hello-tac.out
+
+
+  #====# NULL READ-LINE REDIRECTION #=========================================#
 
     - name: (UNIX) Try redirecting /dev/null as input
       if: matrix.os != 'windows-latest'  # Windows does not have /dev/null
@@ -146,19 +183,20 @@ jobs:
     #
     - name: (PowerShell) Try redirecting $NULL as input
       if: false  # !!! commented out
+      shell: pwsh
       run: |
         $NULL | r3 tests/tac.r > tac-dev-null-in-win.txt
         r3 tests/filecompare.r tac-dev-null-in-win.txt tests/empty-file.out
 
     - name: (CMD.EXE) Try redirecting NUL as input
       if: matrix.os == 'windows-latest'
-      shell: cmd  # Note: PowerShell is default
+      shell: cmd
       run: |
         r3 tests/tac.r < NUL > tac-dev-null-in-cmd.txt
         r3 tests/filecompare.r tac-dev-null-in-cmd.txt tests/empty-file.out
 
 
-  #====# INPUT REDIRECTION (READ-CHAR -> ISSUE!) #============================#
+  #====# NORMAL READ-CHAR REDIRECTION (READ-CHAR -> ISSUE!) #=================#
 
     - name: (UNIX) Character-Based Reversal
       if: matrix.os != 'windows-latest'
@@ -167,17 +205,21 @@ jobs:
         r3 tests/filecompare.r hello-revchars-unix.txt tests/hello-revchars.out
 
     - name: (PowerShell) Character-Based Reversal
-      if: matrix.os == 'windows-latest'
+      if: false  # !!! PowerShell corrupts output (LF -> CR LF) on Windows
+      shell: pwsh
       run: |
         Get-Content tests/hello.in | r3 tests/revchars.r > hello-revchars.txt
         r3 tests/filecompare.r hello-revchars.txt tests/hello-revchars.out
 
     - name: (CMD.EXE) Character-Based Reversal
       if: matrix.os == 'windows-latest'
-      shell: cmd  # Note: PowerShell is default
+      shell: cmd
       run: |
         r3 tests/revchars.r < tests/hello.in > hello-revchars-cmd.txt
         r3 tests/filecompare.r hello-revchars-cmd.txt tests/hello-revchars.out
+
+
+  #====# NULL READ-CHAR REDIRECTION #=========================================#
 
     - name: (UNIX) Try redirecting /dev/null as input
       if: matrix.os != 'windows-latest'  # Windows does not have /dev/null
@@ -189,13 +231,14 @@ jobs:
     #
     - name: (PowerShell) Try redirecting $NULL as input
       if: false  # !!! commented out
+      shell: pwsh
       run: |
         $NULL | r3 tests/revchars.r > revchars-dev-null-in-win.txt
         r3 tests/filecompare.r revchars-dev-null-in-win.txt tests/empty-file.out
 
     - name: (CMD.EXE) Try redirecting NUL as input
       if: matrix.os == 'windows-latest'
-      shell: cmd  # Note: PowerShell is default
+      shell: cmd
       run: |
         r3 tests/revchars.r < NUL > revchars-dev-null-in-cmd.txt
         r3 tests/filecompare.r revchars-dev-null-in-cmd.txt tests/empty-file.out
