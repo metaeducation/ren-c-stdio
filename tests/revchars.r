@@ -19,7 +19,7 @@ Rebol [
 ]
 
 text: join text! collect [
-    until [not keep try read-char]
+    until [not try keep read-char]
 ]
 if not empty? text [
     if newline <> last text [
