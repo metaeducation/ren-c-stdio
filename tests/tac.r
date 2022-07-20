@@ -17,5 +17,5 @@ Rebol [
 ]
 
 try write-stdout delimit/tail newline reverse collect [
-    until [not try keep read-line]
+    until [didn't keep maybe read-line]
 ]
