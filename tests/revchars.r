@@ -18,7 +18,7 @@ Rebol [
     }
 ]
 
-text: join text! collect [
+text: to text! collect [
     until [didn't keep maybe read-char]
 ]
 if not empty? text [
