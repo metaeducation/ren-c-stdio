@@ -16,6 +16,6 @@ Rebol [
     }
 ]
 
-try write-stdout delimit/tail newline reverse collect [
+write-stdout maybe delimit/tail newline reverse collect [
     until [didn't keep maybe read-line]
 ]
