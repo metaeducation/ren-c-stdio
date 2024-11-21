@@ -1,7 +1,7 @@
 Rebol [
     File: %revchars.r
 
-    Description: {
+    Description: --[
         This uses the READ-CHAR interface to reverse the input stream
         on a character-by-character basis.  This is *character* based so
         it assumes the input is UTF-8.  Not to be confused with READ-BYTE
@@ -9,17 +9,17 @@ Rebol [
 
         Note that if a smart terminal is in use, then the ESCAPE key will
         register as giving back a NULL...the same as end of file.
-    }
+    ]--
 
-    Notes: {
+    Notes: --[
         This assumes the input is a validly formed text file (newline
         at end if not zero byte file).  To keep it validly formed, it
         leaves the tail newline at the tail.
-    }
+    ]--
 ]
 
-text: to text! collect [
-    until [didn't keep maybe read-char]
+text: join text! inert collect [
+    until [not keep maybe read-char stdin]
 ]
 if not empty? text [
     if newline <> last text [

@@ -2,7 +2,7 @@ Rebol [
     Title: "Backwards `cat` Program: Print Lines Of Input Reversed"
     File: %tac.r
 
-    Description: {
+    Description: --[
         This is a simple tool for piping that accepts standard input and
         reads lines until end of file, at which point it outputs the
         lines in reverse.
@@ -13,9 +13,9 @@ Rebol [
         it does not need to collect the lines in memory until the end
         of the piped input stream.  For the moment, this only implements
         the pipe version to be used in stdio redirection testing.
-    }
+    ]--
 ]
 
-write-stdout maybe delimit/tail newline reverse collect [
-    until [didn't keep maybe read-line]
+write-stdout opt delimit:tail newline reverse collect [
+    insist [not keep opt read-line stdin]
 ]

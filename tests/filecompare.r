@@ -1,10 +1,10 @@
 Rebol [
-    Title: {File Comparison}
+    Title: "File Comparison"
     File: %filecompare.r
 
-    Description: {
+    Description: --[
        Cross-platform file comparison script.
-    }
+    ]--
 ]
 
 actual: read to file! system.script.args.1
@@ -19,4 +19,3 @@ if actual <> expected [
 ]
 
 quit 0
-
