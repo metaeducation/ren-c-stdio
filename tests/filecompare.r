@@ -1,8 +1,8 @@
 Rebol [
-    Title: "File Comparison"
-    File: %filecompare.r
+    title: "File Comparison"
+    file: %filecompare.r
 
-    Description: --[
+    description: --[
        Cross-platform file comparison script.
     ]--
 ]
@@ -12,9 +12,9 @@ expected: read to file! system.script.args.2
 
 if actual <> expected [
     print "!!! OUTPUT MISMATCH, RECEIVED:"
-    print ^actual
+    print @actual
     print "!!! EXPECTED:"
-    print ^expected
+    print @expected
     quit 1
 ]
 

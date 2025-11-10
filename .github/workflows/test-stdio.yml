@@ -104,21 +104,21 @@ jobs:
     - name: (UNIX) Simple PRINT Output Redirect
       if: matrix.os != 'windows-latest'
       run: |
-        r3 --do "print {Hello} print {World}" > hello.txt
+        r3 --do "print -[Hello]- print -[World]-" > hello.txt
         r3 tests/filecompare.r hello.txt tests/hello.out
 
     - name: (CMD.EXE) Simple PRINT Output Redirect
       if: matrix.os == 'windows-latest'
       shell: cmd
       run: |
-        r3 --do "print {Hello} print {World}" > hello.txt
+        r3 --do "print -[Hello]- print -[World]-" > hello.txt
         r3 tests/filecompare.r hello.txt tests/hello.out
 
     - name: (Powershell) Simple PRINT Output Redirect
       if: false  # !!! PowerShell corrupts output (LF -> CR LF) on Windows
       shell: cmd
       run: |
-        r3 --do "print {Hello} print {World}" > hello.txt
+        r3 --do "print -[Hello]- print -[World]-" > hello.txt
         r3 tests/filecompare.r hello.txt tests/hello.out
 
 
@@ -127,19 +127,19 @@ jobs:
     - name: (UNIX) Redirect PRINT to /dev/null
       if: matrix.os != 'windows-latest'
       run: |
-        r3 --do "print {Hello} print {World}" > /dev/null
+        r3 --do "print -[Hello]- print -[World]-" > /dev/null
 
     - name: (CMD.EXE) Redirect PRINT to NUL
       if: matrix.os == 'windows-latest'
       shell: cmd
       run: |
-        r3 --do "print {Hello} print {World}" > NUL
+        r3 --do "print -[Hello]- print -[World]-" > NUL
 
     - name: (PowerShell) Redirect PRINT to $NULL
       if: matrix.os == 'windows-latest'
       shell: pwsh
       run: |
-        r3 --do "print {Hello} print {World}" > $NULL
+        r3 --do "print -[Hello]- print -[World]-" > $NULL
 
 
   #====# NORMAL READ-LINE REDIRECTION (READ-LINE -> TEXT!) #==================#
@@ -147,21 +147,21 @@ jobs:
     - name: (UNIX) Simple Input Redirect to "tac" implementation
       if: matrix.os != 'windows-latest'
       run: |
-        r3 tests/tac.r < tests/hello.in > hello-tac-unix.txt
+        r3 tests/tac-attempt.r < tests/hello.in > hello-tac-unix.txt
         r3 tests/filecompare.r hello-tac-unix.txt tests/hello-tac.out
 
     - name: (PowerShell) Simple Input Redirect to "tac" on Windows
       if: false  # !!! PowerShell corrupts output (LF -> CR LF) on Windows
       shell: pwsh
       run: |
-        Get-Content tests/hello.in | r3 tests/tac.r > hello-tac.txt
+        Get-Content tests/hello.in | r3 tests/tac-insist.r > hello-tac.txt
         r3 tests/filecompare.r hello-tac.txt tests/hello-tac.out
 
     - name: (CMD.EXE) Simple Input Redirect to "tac" on Windows
       if: matrix.os == 'windows-latest'
       shell: cmd  # Note: PowerShell is default
       run: |
-        r3 tests/tac.r < tests/hello.in > hello-tac-cmd.txt
+        r3 tests/tac-while-delimit.r < tests/hello.in > hello-tac-cmd.txt
         r3 tests/filecompare.r hello-tac-cmd.txt tests/hello-tac.out
 
 
@@ -170,7 +170,7 @@ jobs:
     - name: (UNIX) Try redirecting /dev/null as input
       if: matrix.os != 'windows-latest'  # Windows does not have /dev/null
       run: |
-        r3 tests/tac.r < /dev/null > tac-dev-null-in-unix.txt
+        r3 tests/tac-while-short.r < /dev/null > tac-dev-null-in-unix.txt
         r3 tests/filecompare.r tac-dev-null-in-unix.txt tests/empty-file.out
 
     # !!! PowerShell does not have a `<` operator to feed input leftwards, you
@@ -185,14 +185,14 @@ jobs:
       if: false  # !!! commented out
       shell: pwsh
       run: |
-        $NULL | r3 tests/tac.r > tac-dev-null-in-win.txt
+        $NULL | r3 tests/tac-attempt.r > tac-dev-null-in-win.txt
         r3 tests/filecompare.r tac-dev-null-in-win.txt tests/empty-file.out
 
     - name: (CMD.EXE) Try redirecting NUL as input
       if: matrix.os == 'windows-latest'
       shell: cmd
       run: |
-        r3 tests/tac.r < NUL > tac-dev-null-in-cmd.txt
+        r3 tests/tac-while-short.r < NUL > tac-dev-null-in-cmd.txt
         r3 tests/filecompare.r tac-dev-null-in-cmd.txt tests/empty-file.out
 
 
