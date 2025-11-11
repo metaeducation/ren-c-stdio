@@ -22,7 +22,7 @@ text: join text! collect [  ; !!! pin collect for no evaluation?
     insist [not keep opt read-char stdin]
 ]
 
-if not empty? text [
+if not empty? opt text [  ; !!! not clear if EMPTY? should take null...
     if newline <> last text [
        fail "No newline at end of input"
     ]
