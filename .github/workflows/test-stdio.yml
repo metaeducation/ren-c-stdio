@@ -105,6 +105,7 @@ jobs:
       if: matrix.os != 'windows-latest'
       run: |
         r3 --do "print -[Hello]- print -[World]-" > hello.txt
+        cat hello.txt
         r3 tests/filecompare.r hello.txt tests/hello.out
 
     - name: (CMD.EXE) Simple PRINT Output Redirect
@@ -112,13 +113,19 @@ jobs:
       shell: cmd
       run: |
         r3 --do "print -[Hello]- print -[World]-" > hello.txt
+        type hello.txt
         r3 tests/filecompare.r hello.txt tests/hello.out
 
+    # At one time, Powershell would corrupt redirected output by changing
+    # LF line endings into CR LF.  Test to make sure it is not doing that
+    # anymore (was fixed in Powershell Core).
+    #
     - name: (Powershell) Simple PRINT Output Redirect
-      if: false  # !!! PowerShell corrupts output (LF -> CR LF) on Windows
-      shell: cmd
+      if: matrix.os == 'windows-latest'
+      shell: pwsh
       run: |
         r3 --do "print -[Hello]- print -[World]-" > hello.txt
+        Get-Content hello.txt
         r3 tests/filecompare.r hello.txt tests/hello.out
 
 
@@ -147,21 +154,24 @@ jobs:
     - name: (UNIX) Simple Input Redirect to "tac" implementation
       if: matrix.os != 'windows-latest'
       run: |
-        r3 tests/tac-attempt.r < tests/hello.in > hello-tac-unix.txt
+        r3 tests/tac/tac-attempt.r < tests/hello.in > hello-tac-unix.txt
+        cat hello-tac-unix.txt
         r3 tests/filecompare.r hello-tac-unix.txt tests/hello-tac.out
 
     - name: (PowerShell) Simple Input Redirect to "tac" on Windows
       if: false  # !!! PowerShell corrupts output (LF -> CR LF) on Windows
       shell: pwsh
       run: |
-        Get-Content tests/hello.in | r3 tests/tac-insist.r > hello-tac.txt
+        Get-Content tests/hello.in | r3 tests/tac/tac-insist.r > hello-tac.txt
+        Get-Content hello-tac.txt
         r3 tests/filecompare.r hello-tac.txt tests/hello-tac.out
 
     - name: (CMD.EXE) Simple Input Redirect to "tac" on Windows
       if: matrix.os == 'windows-latest'
       shell: cmd  # Note: PowerShell is default
       run: |
-        r3 tests/tac-while-delimit.r < tests/hello.in > hello-tac-cmd.txt
+        r3 tests/tac/tac-while-delimit.r < tests/hello.in > hello-tac-cmd.txt
+        type hello-tac-cmd.txt
         r3 tests/filecompare.r hello-tac-cmd.txt tests/hello-tac.out
 
 
@@ -170,7 +180,8 @@ jobs:
     - name: (UNIX) Try redirecting /dev/null as input
       if: matrix.os != 'windows-latest'  # Windows does not have /dev/null
       run: |
-        r3 tests/tac-while-short.r < /dev/null > tac-dev-null-in-unix.txt
+        r3 tests/tac/tac-while-short.r < /dev/null > tac-dev-null-in-unix.txt
+        cat tac-dev-null-in-unix.txt
         r3 tests/filecompare.r tac-dev-null-in-unix.txt tests/empty-file.out
 
     # !!! PowerShell does not have a `<` operator to feed input leftwards, you
@@ -185,14 +196,16 @@ jobs:
       if: false  # !!! commented out
       shell: pwsh
       run: |
-        $NULL | r3 tests/tac-attempt.r > tac-dev-null-in-win.txt
+        $NULL | r3 tests/tac/tac-attempt.r > tac-dev-null-in-win.txt
+        Get-Content tac-dev-null-in-win.txt
         r3 tests/filecompare.r tac-dev-null-in-win.txt tests/empty-file.out
 
     - name: (CMD.EXE) Try redirecting NUL as input
       if: matrix.os == 'windows-latest'
       shell: cmd
       run: |
-        r3 tests/tac-while-short.r < NUL > tac-dev-null-in-cmd.txt
+        r3 tests/tac/tac-while-short.r < NUL > tac-dev-null-in-cmd.txt
+        type tac-dev-null-in-cmd.txt
         r3 tests/filecompare.r tac-dev-null-in-cmd.txt tests/empty-file.out
 
 
@@ -202,6 +215,7 @@ jobs:
       if: matrix.os != 'windows-latest'
       run: |
         r3 tests/revchars.r < tests/hello.in > hello-revchars-unix.txt
+        cat hello-revchars-unix.txt
         r3 tests/filecompare.r hello-revchars-unix.txt tests/hello-revchars.out
 
     - name: (PowerShell) Character-Based Reversal
@@ -209,6 +223,7 @@ jobs:
       shell: pwsh
       run: |
         Get-Content tests/hello.in | r3 tests/revchars.r > hello-revchars.txt
+        Get-Content hello-revchars.txt
         r3 tests/filecompare.r hello-revchars.txt tests/hello-revchars.out
 
     - name: (CMD.EXE) Character-Based Reversal
@@ -216,6 +231,7 @@ jobs:
       shell: cmd
       run: |
         r3 tests/revchars.r < tests/hello.in > hello-revchars-cmd.txt
+        type hello-revchars-cmd.txt
         r3 tests/filecompare.r hello-revchars-cmd.txt tests/hello-revchars.out
 
 
@@ -225,6 +241,7 @@ jobs:
       if: matrix.os != 'windows-latest'  # Windows does not have /dev/null
       run: |
         r3 tests/revchars.r < /dev/null > revchars-dev-null-in-unix.txt
+        cat revchars-dev-null-in-unix.txt
         r3 tests/filecompare.r revchars-dev-null-in-unix.txt tests/empty-file.out
 
     # !!! See notes above on Powershell and $NULL input
@@ -234,6 +251,7 @@ jobs:
       shell: pwsh
       run: |
         $NULL | r3 tests/revchars.r > revchars-dev-null-in-win.txt
+        Get-Content revchars-dev-null-in-win.txt
         r3 tests/filecompare.r revchars-dev-null-in-win.txt tests/empty-file.out
 
     - name: (CMD.EXE) Try redirecting NUL as input
@@ -241,4 +259,5 @@ jobs:
       shell: cmd
       run: |
         r3 tests/revchars.r < NUL > revchars-dev-null-in-cmd.txt
+        type revchars-dev-null-in-cmd.txt
         r3 tests/filecompare.r revchars-dev-null-in-cmd.txt tests/empty-file.out
